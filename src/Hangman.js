@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './Hangman.css';
+import randomWord from './words';
 import img0 from './0.jpg';
 import img1 from './1.jpg';
 import img2 from './2.jpg';
@@ -20,9 +21,8 @@ class Hangman extends Component {
 		this.state = {
 			nWrong: 0,
 			guessed: new Set(),
-			answer: 'apple',
-			isHidden: false,
-			endMessage: 'You lost! Try again!'
+			answer: randomWord(),
+			isHidden: false
 		};
 		this.handleGuess = this.handleGuess.bind(this);
 	}
@@ -31,9 +31,14 @@ class Hangman extends Component {
     if guessed letters are {a,p,e}, show "app_e" for "apple"
   */
 	guessedWord() {
-		return this.state.answer
-			.split('')
-			.map((ltr) => (this.state.guessed.has(ltr) ? ltr : '_'));
+		if (this.state.nWrong <= 7) {
+			return this.state.answer
+				.split('')
+				.map((ltr) => (this.state.guessed.has(ltr) ? ltr : '_'));
+		} else {
+			this.setState({ guessed: new Set() });
+			return this.state.answer.split('');
+		}
 	}
 
 	/** handleGuest: handle a guessed letter:
@@ -75,7 +80,10 @@ class Hangman extends Component {
 		return (
 			<div className="Hangman">
 				<h1>Hangman</h1>
-				<img src={this.props.images[this.state.nWrong]} />
+				<img
+					src={this.props.images[this.state.nWrong]}
+					alt={this.getRemaining()}
+				/>
 				<br />
 				{!this.state.isHidden && (
 					<div>
@@ -83,16 +91,16 @@ class Hangman extends Component {
 						Number Wrong: {this.state.nWrong}
 						<br />
 						Remaining: {this.getRemaining()}
-						<p className="Hangman-word">{this.guessedWord()}</p>
+					</div>
+				)}
+				<p className="Hangman-word">{this.guessedWord()} </p>
+				{!this.state.isHidden && (
+					<div>
 						<p className="Hangman-btns">{this.generateButtons()}</p>
 					</div>
 				)}
 				{this.state.isHidden && (
-					<p>
-						{' '}
-						{this.state.nWrong === 6 ? 'You Lost Try Again!' : 'You won!'}
-						{/* {this.state.endMessage} */}
-					</p>
+					<p> {this.state.nWrong === 6 ? 'You Lost Try Again!' : 'You won!'}</p>
 				)}
 			</div>
 		);
