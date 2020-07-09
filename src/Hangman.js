@@ -17,7 +17,13 @@ class Hangman extends Component {
 
 	constructor(props) {
 		super(props);
-		this.state = { nWrong: 0, guessed: new Set(), answer: 'apple' };
+		this.state = {
+			nWrong: 0,
+			guessed: new Set(),
+			answer: 'apple',
+			isHidden: false,
+			endMessage: 'You lost! Try again!'
+		};
 		this.handleGuess = this.handleGuess.bind(this);
 	}
 
@@ -36,10 +42,14 @@ class Hangman extends Component {
   */
 	handleGuess(evt) {
 		let ltr = evt.target.value;
-		this.setState((st) => ({
-			guessed: st.guessed.add(ltr),
-			nWrong: st.nWrong + (st.answer.includes(ltr) ? 0 : 1)
-		}));
+		if (this.state.nWrong <= 5) {
+			this.setState((st) => ({
+				guessed: st.guessed.add(ltr),
+				nWrong: st.nWrong + (st.answer.includes(ltr) ? 0 : 1)
+			}));
+		} else {
+			this.setState({ isHidden: !this.state.isHidden });
+		}
 	}
 
 	/** generateButtons: return array of letter buttons to render */
@@ -67,11 +77,23 @@ class Hangman extends Component {
 				<h1>Hangman</h1>
 				<img src={this.props.images[this.state.nWrong]} />
 				<br />
-				Number of Wrong Guesses: {this.state.nWrong}
-				<br />
-				Remaining: {this.getRemaining()}
-				<p className="Hangman-word">{this.guessedWord()}</p>
-				<p className="Hangman-btns">{this.generateButtons()}</p>
+				{!this.state.isHidden && (
+					<div>
+						{' '}
+						Number Wrong: {this.state.nWrong}
+						<br />
+						Remaining: {this.getRemaining()}
+						<p className="Hangman-word">{this.guessedWord()}</p>
+						<p className="Hangman-btns">{this.generateButtons()}</p>
+					</div>
+				)}
+				{this.state.isHidden && (
+					<p>
+						{' '}
+						{this.state.nWrong === 6 ? 'You Lost Try Again!' : 'You won!'}
+						{/* {this.state.endMessage} */}
+					</p>
+				)}
 			</div>
 		);
 	}
