@@ -25,19 +25,19 @@ class Hangman extends Component {
 			isHidden: false
 		};
 		this.handleGuess = this.handleGuess.bind(this);
+		this.playAgain = this.playAgain.bind(this);
 	}
 
 	/** guessedWord: show current-state of word:
     if guessed letters are {a,p,e}, show "app_e" for "apple"
   */
 	guessedWord() {
-		if (this.state.nWrong <= 7) {
+		if (this.state.isHidden) {
+			return this.state.answer.split('');
+		} else {
 			return this.state.answer
 				.split('')
 				.map((ltr) => (this.state.guessed.has(ltr) ? ltr : '_'));
-		} else {
-			this.setState({ guessed: new Set() });
-			return this.state.answer.split('');
 		}
 	}
 
@@ -47,7 +47,7 @@ class Hangman extends Component {
   */
 	handleGuess(evt) {
 		let ltr = evt.target.value;
-		if (this.state.nWrong <= 5) {
+		if (this.state.nWrong < this.props.maxWrong - 1) {
 			this.setState((st) => ({
 				guessed: st.guessed.add(ltr),
 				nWrong: st.nWrong + (st.answer.includes(ltr) ? 0 : 1)
@@ -72,11 +72,25 @@ class Hangman extends Component {
 	}
 
 	getRemaining() {
-		return this.props.maxWrong - this.state.nWrong + 1;
+		return this.props.maxWrong - this.state.nWrong;
+	}
+
+	playAgain() {
+		this.setState({
+			nWrong: 0,
+			guessed: new Set(),
+			answer: randomWord(),
+			isHidden: false
+		});
 	}
 
 	/** render: render game */
 	render() {
+		const gameOver = this.state.nWrong >= this.props.maxWrong;
+		const isWinner = this.guessedWord().join('') === this.state.answer;
+		let gameState = this.generateButtons();
+		if (isWinner) gameState = 'You Win!';
+		if (gameOver) gameState = 'You Lose!';
 		return (
 			<div className="Hangman">
 				<h1>Hangman</h1>
@@ -100,7 +114,19 @@ class Hangman extends Component {
 					</div>
 				)}
 				{this.state.isHidden && (
-					<p> {this.state.nWrong === 6 ? 'You Lost Try Again!' : 'You won!'}</p>
+					<p>
+						<strong>
+							{' '}
+							{this.state.nWrong < this.props.maxWrong ? (
+								'You Lost Try Again!'
+							) : null}
+						</strong>{' '}
+						{this.state.isWinner ? 'You won!' : null}
+						<br />
+						<button id="reset" onClick={this.playAgain}>
+							Play Again!
+						</button>
+					</p>
 				)}
 			</div>
 		);
